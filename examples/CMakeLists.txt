@@ -109,11 +109,16 @@ else ()
   #add_definitions(${CXX_COVERAGE_COMPILE_FLAGS} "-lgslcblas")
   #add_definitions( "-O3 -lgsl -lm -ldl -lgslcblas" )
 
-  add_subdirectory(logconcave)
+  #add_subdirectory(logconcave)
   #add_subdirectory(spectrahedra)
   add_subdirectory(hpolytope-volume)
   add_subdirectory(count-linear-extensions-using-hpolytope)
-  
+  add_subdirectory(count-linear-extensions-using-order-polytope)
+  add_subdirectory(ellipsoid-sampling)
+  add_subdirectory(order-polytope-basics)
+  add_subdirectory(sampling-hpolytope-with-billiard-walks)
+  add_subdirectory(experiment-cle-vcb-single-round)
+
   add_executable (vpolytopevolume vpolytope-volume/vpolytopevolume.cpp)
   TARGET_LINK_LIBRARIES(vpolytopevolume ${LP_SOLVE})
 
