@@ -1,7 +1,7 @@
 #include "Eigen/Eigen"
 #include <vector>
 #include "cartesian_geom/cartesian_kernel.h"
-#include "hpolytope.h"
+#include "order_polytope.h"
 #include "known_polytope_generators.h"
 
 #include "random_walks/random_walks.hpp"
@@ -21,7 +21,6 @@
 
 
 enum VOL_OPTIONS {
-<<<<<<< HEAD
 	SOB,
 	CG,
 	CB
@@ -29,25 +28,15 @@ enum VOL_OPTIONS {
 
 enum ROUND_OPTIONS {
 	SVD,
-	MIN_ELLIPSOID
-=======
-    SOB,
-    CG,
-    CB
-};
-
-enum ROUND_OPTIONS {
-    SVD,
-    MIN_ELLIPSOID
->>>>>>> d08b23a8f0986b3c3c93557f2efe2625072b7847
+	MIN_ELLIPSOIDS
 };
 
 
 typedef double NT;
 typedef Cartesian <NT> Kernel;
 typedef typename Kernel::Point Point;
-typedef BoostRandomNumberGenerator<boost::mt19937, NT, 5> RNGType;
-typedef HPolytope <Point> HPOLYTOPE;
+typedef BoostRandomNumberGenerator<boost::mt19937, NT> RNGType;
+typedef OrderPolytope <Point> HPOLYTOPE;
 typedef typename HPOLYTOPE::MT MT;
 typedef typename HPOLYTOPE::VT VT;
 
@@ -66,7 +55,7 @@ struct ArgOptions {
             case CG:
                 return volume_cooling_gaussians<GaussianCDHRWalk, RNGType>(P, e, walk_len);
             case CB:
-                return volume_cooling_balls<CDHRWalk, RNGType>(P, e, 2*walk_len).second;;
+                return volume_cooling_balls<AcceleratedBilliardWalk, RNGType>(P, e, walk_len).second;;
         }
 
         return -1;
@@ -79,7 +68,7 @@ struct ArgOptions {
         switch (ro) {
             case SVD:
                 return svd_rounding<CDHRWalk, MT, VT>(P, InnerBall, walk_len, rng);
-            case MIN_ELLIPSOID:
+            case MIN_ELLIPSOIDS:
                 return min_sampling_covering_ellipsoid_rounding<CDHRWalk, MT, VT>(P, InnerBall, walk_len, rng);
         }
     }
@@ -88,7 +77,7 @@ struct ArgOptions {
 NT calculateLinearExtension(ArgOptions& args) {
     // Setup parameters for calculating volume and rounding
     unsigned int d = (args.HP)->dimension();
-    unsigned int walk_len = 10 + d/10;
+    unsigned int walk_len = 1;
     NT e=0.1;
     // calculate volume of the order polytope
     NT round_multiply = 1.0;
@@ -101,6 +90,8 @@ NT calculateLinearExtension(ArgOptions& args) {
         round_multiply = std::get<2>(res);
     }
     NT volume = round_multiply * args.volume_method(*(args.HP), e, walk_len);
+    
+    std::cout << "reflections:" << HPOLYTOPE::reflection_count << "," << std::endl;
 
     // multiplying by d factorial, d = number of elements
     for(NT i=(NT)d; i>1; i-=1) {
@@ -140,7 +131,7 @@ bool parseArgs(int argc, char* argv[], ArgOptions& args) {
             args.ro = SVD;
         }
         else if(rm == "MIN_ELLIPSOID") {
-            args.ro = MIN_ELLIPSOID;
+            args.ro = MIN_ELLIPSOIDS;
         }
         else {
             std::cerr << "Invalid option for rounding method";
@@ -209,7 +200,8 @@ bool parseArgs(int argc, char* argv[], ArgOptions& args) {
     return true;
 }
 
-
+template <>
+int HPOLYTOPE::reflection_count = 0;
 /**
  
  Usage: ./volesti_lecount INSTANCE VOLUME_METHOD ROUNDING_METHOD 
