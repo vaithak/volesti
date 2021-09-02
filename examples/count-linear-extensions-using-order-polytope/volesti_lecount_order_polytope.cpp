@@ -2,9 +2,11 @@
 #include <vector>
 #include "cartesian_geom/cartesian_kernel.h"
 #include "orderpolytope.h"
-#include "random_walks/gaussian_accelerated_billiard_walk.hpp"
 #include "generators/boost_random_number_generator.hpp"
+#include "random_walks/gaussian_accelerated_billiard_walk.hpp"
+#include "random_walks/uniform_accelerated_billiard_walk.hpp"
 #include "volume_cooling_ellipsoids.hpp"
+#include "volume_cooling_balls.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -18,6 +20,8 @@ typedef typename Kernel::Point Point;
 typedef BoostRandomNumberGenerator<boost::mt19937, NT> RNGType;
 typedef OrderPolytope<Point> ORDER_POLYTOPE;
 
+template <>
+int ORDER_POLYTOPE::reflection_count = 0;
 
 NT calculateLinearExtension(ORDER_POLYTOPE const& OP) {
     // Setup parameters for calculating volume and rounding
@@ -26,12 +30,13 @@ NT calculateLinearExtension(ORDER_POLYTOPE const& OP) {
     unsigned int win_len = 300;
     NT e=0.1;
 
-    NT volume = volume_cooling_ellipsoids<GaussianAcceleratedBilliardWalk, RNGType>(OP, e, walk_len, win_len).second;
+    NT volume = volume_cooling_balls<AcceleratedBilliardWalk, RNGType>(OP, e, walk_len).second;
 
     // multiplying by d factorial, d = number of elements
     for(NT i=(NT)d; i>1; i-=1) {
         volume = volume * i;
     }
+    std::cout << "reflections:" << ORDER_POLYTOPE::reflection_count << "," << std::endl;
 
     return volume;
 }

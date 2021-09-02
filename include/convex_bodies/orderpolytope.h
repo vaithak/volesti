@@ -27,6 +27,7 @@ public:
     typedef typename Point::FT NT;
     typedef Eigen::Matrix<NT, Eigen::Dynamic, 1> VT;
     typedef Eigen::Matrix<NT, Eigen::Dynamic, Eigen::Dynamic> MT;
+    static int reflection_count;
 
 private:
     Poset _poset;
@@ -88,9 +89,13 @@ public:
     }
 
 
-    Eigen::SparseMatrix<NT> get_mat() const
-    {
-        return _A.sparseView();
+   // Eigen::SparseMatrix<NT> get_mat() const
+   // {
+   //     return _A.sparseView();
+   // }
+
+    MT get_mat() const {
+	return _A;	   
     }
 
 
@@ -724,6 +729,7 @@ public:
             v.set_coord(curr_relation.first, v[curr_relation.first] - 2 * dot_prod * (1.0 / _row_norms(facet)));
             v.set_coord(curr_relation.second, v[curr_relation.second] - 2 * dot_prod * (-1.0 / _row_norms(facet)));
         }
+	OrderPolytope::reflection_count += 1;
     }
 
 

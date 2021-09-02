@@ -38,7 +38,8 @@ NT calculateLinearExtension(HPOLYTOPE& HP) {
         throw std::runtime_error("no inscribed ball");
 
     VT x0 = innerBall.first.getCoefficients();
-    std::pair<std::pair<MT, VT>, bool> inscribed_ellipsoid_res = max_inscribed_ellipsoid<MT>(HP.get_mat(),
+    Eigen::SparseMatrix<NT> A = HP.get_mat().sparseView();
+    std::pair<std::pair<MT, VT>, bool> inscribed_ellipsoid_res = max_inscribed_ellipsoid<MT>(A,
                                                                                              HP.get_vec(),
                                                                                              x0,
                                                                                              max_iter,
@@ -48,25 +49,29 @@ NT calculateLinearExtension(HPOLYTOPE& HP) {
         throw std::runtime_error("no inscribed ellipsoid");
 
     MT A_ell = inscribed_ellipsoid_res.first.first.inverse();
-    EllipsoidType inscribed_ellipsoid( A_ell );
+    EllipsoidType inscribed_ellipsoid(A_ell);
     MT L = inscribed_ellipsoid.Lcov();
 
     HP.shift(inscribed_ellipsoid_res.first.second);
     NT round_val = L.transpose().determinant();
     HP.linear_transformIt(L);
-    // ------------------------------------------------------------------------------------------------
 
-    NT volume = volume_cooling_balls<BilliardWalk, RNGType>(HP, e, walk_len).second;
+    NT volume = volume_cooling_balls<AcceleratedBilliardWalk, RNGType>(HP, e, walk_len).second;
     volume = volume * round_val;
+
+    std::cout << "reflections:" << HPOLYTOPE::reflection_count << "," << std::endl;
 
     // multiplying by d factorial, d = number of elements
     for(NT i=(NT)d; i>1; i-=1) {
         volume = volume * i;
     }
+    
 
     return volume;
 }
 
+template <>
+int HPOLYTOPE::reflection_count = 0;
 
 /**
 

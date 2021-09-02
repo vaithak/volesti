@@ -745,6 +745,7 @@ std::pair<double, double> volume_cooling_balls(Polytope const& Pin,
         return std::pair<NT, NT> (-1.0, 0.0);
     }
 
+    std::cout << "ratios:" << BallSet.size() << "," << std::endl;
     NT vol = (NT(n)/NT(2) * std::log(M_PI)) + NT(n)*std::log((*(BallSet.end() - 1)).radius()) - log_gamma_function(NT(n) / NT(2) + 1);
 
     int mm = BallSet.size() + 1;

@@ -47,6 +47,7 @@ public:
     //typedef RowMatrixXd MT;
     typedef Eigen::Matrix<NT, Eigen::Dynamic, Eigen::Dynamic> MT;
     typedef Eigen::Matrix<NT, Eigen::Dynamic, 1>              VT;
+    static int reflection_count;
 
 private:
     unsigned int         _d; //dimension
@@ -690,6 +691,7 @@ public:
     void compute_reflection(Point& v, Point const&, int const& facet) const
     {
         v += -2 * v.dot(A.row(facet)) * A.row(facet);
+	HPolytope::reflection_count += 1;
     }
 
     NT log_barrier(Point &x, NT t = NT(100)) const {
@@ -724,7 +726,9 @@ public:
 
             Point a((-2.0 * params.inner_vi_ak) * A.row(params.facet_prev));
             v += a;
+	    HPolytope::reflection_count += 1;
     }
+
 
     template <class bfunc, class NonLinearOracle>
     std::tuple<NT, Point, int> curve_intersect(
